@@ -48,7 +48,7 @@ export default function Home() {
     <LocaleProvider>
       <LoadingScreen />
       <SmoothScroll />
-      <main className="relative overflow-hidden">
+      <main className="relative">
         <Navigation />
         <HeroSlider />
         <ShowroomBanner />

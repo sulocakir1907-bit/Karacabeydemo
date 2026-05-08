@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useCallback, use } from 'react'
+import { useState, useRef, useCallback, use, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { 
@@ -15,7 +16,9 @@ import {
   Mail,
   ChevronRight,
   Check,
-  Info
+  Info,
+  Globe,
+  ChevronDown
 } from 'lucide-react'
 import { 
   FABRIC_DATA,
@@ -28,16 +31,72 @@ import {
   type FabricProduct
 } from '@/lib/fabric-data'
 import { cn } from '@/lib/utils'
+import { type Locale, locales, getTranslation } from '@/lib/i18n'
+
+// Language Selector Component
+function LanguageSelector({ locale, setLocale }: { locale: Locale; setLocale: (l: Locale) => void }) {
+  const [isOpen, setIsOpen] = useState(false)
+  
+  const localeNames: Record<Locale, string> = {
+    en: 'English',
+    tr: 'Türkçe',
+    ru: 'Русский',
+  }
+  
+  const localeFlags: Record<Locale, string> = {
+    en: '🇬🇧',
+    tr: '🇹🇷',
+    ru: '🇷🇺',
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:text-slate-900 transition-colors"
+      >
+        <Globe className="w-4 h-4" />
+        <span>{localeFlags[locale]} {localeNames[locale]}</span>
+        <ChevronDown className={cn("w-4 h-4 transition-transform", isOpen && "rotate-180")} />
+      </button>
+      
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-slate-200 shadow-lg z-50">
+            {locales.map((l) => (
+              <button
+                key={l}
+                onClick={() => {
+                  setLocale(l)
+                  setIsOpen(false)
+                }}
+                className={cn(
+                  "w-full text-left px-4 py-2 text-sm transition-colors",
+                  locale === l ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50"
+                )}
+              >
+                {localeFlags[l]} {localeNames[l]}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 // Magnifier component for texture inspection
 function TextureMagnifier({ 
   src, 
   alt,
-  magnification = 2.5 
+  magnification = 2.5,
+  hoverText
 }: { 
   src: string
   alt: string
   magnification?: number
+  hoverText: string
 }) {
   const [isActive, setIsActive] = useState(false)
   const [position, setPosition] = useState({ x: 0, y: 0 })
@@ -99,7 +158,7 @@ function TextureMagnifier({
         {/* Zoom Indicator */}
         <div className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-xs text-slate-700">
           <ZoomIn className="w-3.5 h-3.5" />
-          <span>Hover to inspect texture</span>
+          <span>{hoverText}</span>
         </div>
       </div>
     </div>
@@ -107,43 +166,45 @@ function TextureMagnifier({
 }
 
 // Technical specs table component
-function SpecificationTable({ product }: { product: FabricProduct }) {
+function SpecificationTable({ product, locale }: { product: FabricProduct; locale: Locale }) {
+  const t = getTranslation(locale)
+  
   const specs = [
     {
       icon: Ruler,
-      label: 'Width',
+      label: t.showroom.widthLabel,
       value: `${product.width} cm`,
-      description: 'Fabric roll width',
+      description: t.showroom.fabricRollWidth,
     },
     {
       icon: Scale,
-      label: 'Weight (GSM)',
+      label: t.showroom.weightLabel,
       value: `${product.weight} g/m²`,
-      description: 'Grams per square meter',
+      description: t.showroom.gramsPerSqMeter,
     },
     {
       icon: Droplets,
-      label: 'Composition',
+      label: t.showroom.compositionLabel,
       value: formatComposition(product.composition),
-      description: 'Material blend',
+      description: t.showroom.materialBlend,
     },
     ...(product.martindale ? [{
       icon: Info,
-      label: 'Martindale',
-      value: `${product.martindale.toLocaleString()} cycles`,
-      description: 'Abrasion resistance',
+      label: t.showroom.martindaleLabel,
+      value: `${product.martindale.toLocaleString()} ${t.showroom.cycles}`,
+      description: t.showroom.abrasionResistance,
     }] : []),
     ...(product.lightFastness ? [{
       icon: Sun,
-      label: 'Light Fastness',
+      label: t.showroom.lightFastnessLabel,
       value: `${product.lightFastness}/8`,
-      description: 'ISO 105-B02 rating',
+      description: t.showroom.isoRating,
     }] : []),
     ...(product.fireRetardant ? [{
       icon: Flame,
-      label: 'Fire Retardant',
-      value: 'Yes',
-      description: 'FR certified',
+      label: t.showroom.fireRetardantLabel,
+      value: t.showroom.yes,
+      description: t.showroom.frCertified,
     }] : []),
   ]
 
@@ -151,7 +212,7 @@ function SpecificationTable({ product }: { product: FabricProduct }) {
     <div className="border border-slate-200 divide-y divide-slate-200">
       <div className="px-4 py-3 bg-slate-50">
         <h3 className="text-sm font-medium tracking-[0.1em] uppercase text-slate-900">
-          Technical Specifications
+          {t.showroom.technicalSpecs}
         </h3>
       </div>
       {specs.map((spec, index) => (
@@ -171,20 +232,22 @@ function SpecificationTable({ product }: { product: FabricProduct }) {
 }
 
 // Quote request section
-function QuoteRequest({ product }: { product: FabricProduct }) {
+function QuoteRequest({ product, locale }: { product: FabricProduct; locale: Locale }) {
+  const t = getTranslation(locale)
+  
   const whatsappMessage = encodeURIComponent(
-    `Hello Karacabey Tekstil,\n\nI am interested in:\n\nProduct: ${product.name}\nSKU: ${product.sku}\nCategory: ${categoryLabels[product.category].en}\n\nPlease provide pricing and availability information.\n\nThank you.`
+    `Hello Karacabey Tekstil,\n\nI am interested in:\n\nProduct: ${product.name}\nSKU: ${product.sku}\nCategory: ${categoryLabels[product.category][locale]}\n\nPlease provide pricing and availability information.\n\nThank you.`
   )
 
   const emailSubject = encodeURIComponent(`Quote Request: ${product.name} (${product.sku})`)
   const emailBody = encodeURIComponent(
-    `Hello Karacabey Tekstil,\n\nI am interested in:\n\nProduct: ${product.name}\nSKU: ${product.sku}\nCategory: ${categoryLabels[product.category].en}\nWidth: ${product.width} cm\nWeight: ${product.weight} g/m²\nComposition: ${formatComposition(product.composition)}\n\nPlease provide pricing and availability information.\n\nThank you.`
+    `Hello Karacabey Tekstil,\n\nI am interested in:\n\nProduct: ${product.name}\nSKU: ${product.sku}\nCategory: ${categoryLabels[product.category][locale]}\nWidth: ${product.width} cm\nWeight: ${product.weight} g/m²\nComposition: ${formatComposition(product.composition)}\n\nPlease provide pricing and availability information.\n\nThank you.`
   )
 
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-medium tracking-[0.1em] uppercase text-slate-900">
-        Request Quote
+        {t.showroom.requestQuote}
       </h3>
       <div className="grid grid-cols-2 gap-3">
         <a
@@ -205,14 +268,15 @@ function QuoteRequest({ product }: { product: FabricProduct }) {
         </a>
       </div>
       <p className="text-xs text-slate-500 text-center">
-        Minimum order: {product.minOrder} meters
+        {t.showroom.minOrderLabel}: {product.minOrder} {t.showroom.meters}
       </p>
     </div>
   )
 }
 
 // Related products component
-function RelatedProducts({ product }: { product: FabricProduct }) {
+function RelatedProducts({ product, locale }: { product: FabricProduct; locale: Locale }) {
+  const t = getTranslation(locale)
   const relatedProducts = getProductsByCategory(product.category)
     .filter(p => p.id !== product.id)
     .slice(0, 4)
@@ -222,13 +286,13 @@ function RelatedProducts({ product }: { product: FabricProduct }) {
   return (
     <section className="mt-16 pt-16 border-t border-slate-200">
       <h2 className="text-xl font-medium text-slate-900 mb-8">
-        Related Products
+        {t.showroom.relatedProducts}
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {relatedProducts.map((related) => (
           <Link
             key={related.id}
-            href={`/showroom/${related.id}`}
+            href={`/showroom/${related.id}?lang=${locale}`}
             className="group"
           >
             <div className="relative aspect-square overflow-hidden bg-slate-100 mb-3">
@@ -255,20 +319,35 @@ function RelatedProducts({ product }: { product: FabricProduct }) {
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
+  const searchParams = useSearchParams()
   const product = getProductById(resolvedParams.id)
+  
+  // Get initial locale from URL or default to 'en'
+  const initialLocale = (searchParams.get('lang') as Locale) || 'en'
+  const [locale, setLocale] = useState<Locale>(
+    locales.includes(initialLocale) ? initialLocale : 'en'
+  )
+  const t = getTranslation(locale)
+
+  // Update URL when locale changes
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('lang', locale)
+    window.history.replaceState({}, '', url.toString())
+  }, [locale])
 
   if (!product) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-medium text-slate-900 mb-4">Product Not Found</h1>
-          <p className="text-slate-500 mb-8">The product you&apos;re looking for doesn&apos;t exist.</p>
+          <h1 className="text-2xl font-medium text-slate-900 mb-4">{t.showroom.productNotFound}</h1>
+          <p className="text-slate-500 mb-8">{t.showroom.productNotFoundDesc}</p>
           <Link
             href="/showroom"
             className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-sm hover:bg-slate-800 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Showroom
+            {t.showroom.backToShowroom}
           </Link>
         </div>
       </div>
@@ -286,15 +365,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </Link>
             <nav className="hidden md:flex items-center gap-8">
               <Link href="/" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Home
+                {t.showroom.home}
               </Link>
               <Link href="/showroom" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
                 Showroom
               </Link>
-              <Link href="#contact" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Contact
+              <Link href="/#contact" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                {t.showroom.contact}
               </Link>
+              <LanguageSelector locale={locale} setLocale={setLocale} />
             </nav>
+            {/* Mobile Language Selector */}
+            <div className="md:hidden">
+              <LanguageSelector locale={locale} setLocale={setLocale} />
+            </div>
           </div>
         </div>
       </header>
@@ -307,7 +391,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               Showroom
             </Link>
             <ChevronRight className="w-3 h-3 text-slate-400" />
-            <span className="text-slate-500">{categoryLabels[product.category].en}</span>
+            <span className="text-slate-500">{categoryLabels[product.category][locale]}</span>
             <ChevronRight className="w-3 h-3 text-slate-400" />
             <span className="text-slate-900">{product.name}</span>
           </nav>
@@ -323,6 +407,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               src={product.images.primary} 
               alt={product.name}
               magnification={2.5}
+              hoverText={t.showroom.hoverToInspect}
             />
             
             {/* Image thumbnails placeholder */}
@@ -353,16 +438,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-xs font-medium tracking-[0.15em] uppercase text-slate-500">
-                  {categoryLabels[product.category].en}
+                  {categoryLabels[product.category][locale]}
                 </span>
                 {product.new && (
                   <span className="px-2 py-0.5 bg-slate-900 text-white text-[10px] font-medium tracking-wider uppercase">
-                    New
+                    {t.showroom.new}
                   </span>
                 )}
                 {product.bestseller && (
                   <span className="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-medium tracking-wider uppercase">
-                    Bestseller
+                    {t.showroom.bestseller}
                   </span>
                 )}
               </div>
@@ -378,25 +463,25 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center py-4 bg-white border border-slate-200">
                 <span className="block text-2xl font-light text-slate-900">{product.width}</span>
-                <span className="block text-xs text-slate-500 uppercase tracking-wider mt-1">cm width</span>
+                <span className="block text-xs text-slate-500 uppercase tracking-wider mt-1">{t.showroom.cmWidth}</span>
               </div>
               <div className="text-center py-4 bg-white border border-slate-200">
                 <span className="block text-2xl font-light text-slate-900">{product.weight}</span>
-                <span className="block text-xs text-slate-500 uppercase tracking-wider mt-1">g/m² (GSM)</span>
+                <span className="block text-xs text-slate-500 uppercase tracking-wider mt-1">{t.showroom.gsmLabel}</span>
               </div>
               <div className="text-center py-4 bg-white border border-slate-200">
                 <span className="block text-2xl font-light text-slate-900">{product.minOrder}</span>
-                <span className="block text-xs text-slate-500 uppercase tracking-wider mt-1">min. meters</span>
+                <span className="block text-xs text-slate-500 uppercase tracking-wider mt-1">{t.showroom.minMeters}</span>
               </div>
             </div>
 
             {/* Technical Specs Table */}
-            <SpecificationTable product={product} />
+            <SpecificationTable product={product} locale={locale} />
 
             {/* Usage Areas */}
             <div className="space-y-3">
               <h3 className="text-sm font-medium tracking-[0.1em] uppercase text-slate-900">
-                Recommended Use
+                {t.showroom.recommendedUse}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {product.usageAreas.map((usage) => (
@@ -405,7 +490,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-sm text-slate-700"
                   >
                     <Check className="w-3 h-3" />
-                    {usageAreaLabels[usage].en}
+                    {usageAreaLabels[usage][locale]}
                   </span>
                 ))}
               </div>
@@ -414,7 +499,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             {/* Available Colors */}
             <div className="space-y-3">
               <h3 className="text-sm font-medium tracking-[0.1em] uppercase text-slate-900">
-                Available Colors
+                {t.showroom.availableColors}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {product.colors.map((color) => (
@@ -431,7 +516,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             {/* Care Instructions */}
             <div className="space-y-3">
               <h3 className="text-sm font-medium tracking-[0.1em] uppercase text-slate-900">
-                Care Instructions
+                {t.showroom.careInstructions}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {product.washingInstructions.map((instruction) => (
@@ -439,25 +524,25 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     key={instruction}
                     className="px-3 py-1.5 bg-slate-50 text-xs text-slate-600"
                   >
-                    {washingInstructionLabels[instruction].en}
+                    {washingInstructionLabels[instruction][locale]}
                   </span>
                 ))}
               </div>
             </div>
 
             {/* Quote Request */}
-            <QuoteRequest product={product} />
+            <QuoteRequest product={product} locale={locale} />
           </div>
         </div>
 
         {/* Related Products */}
-        <RelatedProducts product={product} />
+        <RelatedProducts product={product} locale={locale} />
       </main>
 
       {/* Footer */}
       <footer className="mt-16 bg-white border-t border-slate-200 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
-          <p>Karacabey Tekstil - Premium Fabrics for Discerning Clients</p>
+          <p>Karacabey Tekstil - {t.showroom.premiumFabrics}</p>
         </div>
       </footer>
     </div>

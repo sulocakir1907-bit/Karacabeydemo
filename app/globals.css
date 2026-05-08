@@ -155,15 +155,20 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow-y: auto !important;
+    overflow-x: hidden;
   }
   
   /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
+    overflow-y: auto !important;
+    overflow-x: hidden;
   }
   
   html.lenis, html.lenis body {
     height: auto;
+    overflow: visible !important;
   }
   
   .lenis.lenis-smooth {
@@ -175,7 +180,7 @@
   }
   
   .lenis.lenis-stopped {
-    overflow: hidden;
+    overflow: hidden !important;
   }
   
   .lenis.lenis-scrolling iframe {

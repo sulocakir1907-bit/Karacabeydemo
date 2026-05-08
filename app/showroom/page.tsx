@@ -3,18 +3,18 @@
 import { useMemo, useState, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Search, SlidersHorizontal, X, ChevronDown, Flame, Sparkles, TrendingUp } from 'lucide-react'
+import { Search, SlidersHorizontal, X, ChevronDown, Flame, Sparkles, TrendingUp, Globe } from 'lucide-react'
 import { 
   FABRIC_DATA, 
   type FabricCategory, 
   type FabricProduct,
   type UsageArea,
   categoryLabels,
-  usageAreaLabels,
   formatComposition,
   getCategories
 } from '@/lib/fabric-data'
 import { cn } from '@/lib/utils'
+import { type Locale, locales, getTranslation } from '@/lib/i18n'
 
 // Price category display
 const priceLabels: Record<number, string> = {
@@ -28,19 +28,25 @@ const priceLabels: Record<number, string> = {
 // Sort options
 type SortOption = 'name-asc' | 'name-desc' | 'weight-asc' | 'weight-desc' | 'price-asc' | 'price-desc'
 
-const sortLabels: Record<SortOption, string> = {
-  'name-asc': 'Name (A-Z)',
-  'name-desc': 'Name (Z-A)',
-  'weight-asc': 'Weight (Low to High)',
-  'weight-desc': 'Weight (High to Low)',
-  'price-asc': 'Price (Low to High)',
-  'price-desc': 'Price (High to Low)',
+// Usage area type mapping for i18n
+const usageAreaKeyMap: Record<UsageArea, keyof typeof getTranslation extends (l: Locale) => infer T ? T extends { showroom: { usageAreas: infer U } } ? U : never : never> = {
+  'curtains': 'curtains',
+  'upholstery': 'upholstery',
+  'bedding': 'bedding',
+  'tablecloth': 'tablecloth',
+  'cushions': 'cushions',
+  'wall-panels': 'wallPanels',
+  'event-decor': 'eventDecor',
+  'headboards': 'headboards',
+  'throws': 'throws',
 }
 
-function ProductCard({ product }: { product: FabricProduct }) {
+function ProductCard({ product, locale }: { product: FabricProduct; locale: Locale }) {
+  const t = getTranslation(locale)
+  
   return (
     <Link 
-      href={`/showroom/${product.id}`}
+      href={`/showroom/${product.id}?lang=${locale}`}
       className="group block bg-white border border-slate-200 hover:border-slate-300 transition-all duration-300 hover:shadow-lg"
     >
       {/* Image Container */}
@@ -58,13 +64,13 @@ function ProductCard({ product }: { product: FabricProduct }) {
           {product.new && (
             <span className="inline-flex items-center gap-1 px-2 py-1 bg-slate-900 text-white text-[10px] font-medium tracking-wider uppercase">
               <Sparkles className="w-3 h-3" />
-              New
+              {t.showroom.new}
             </span>
           )}
           {product.bestseller && (
             <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500 text-white text-[10px] font-medium tracking-wider uppercase">
               <TrendingUp className="w-3 h-3" />
-              Bestseller
+              {t.showroom.bestseller}
             </span>
           )}
           {product.fireRetardant && (
@@ -87,7 +93,7 @@ function ProductCard({ product }: { product: FabricProduct }) {
       <div className="p-4">
         {/* Category Tag */}
         <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-slate-500">
-          {categoryLabels[product.category].en}
+          {categoryLabels[product.category][locale]}
         </span>
         
         {/* Product Name */}
@@ -98,15 +104,15 @@ function ProductCard({ product }: { product: FabricProduct }) {
         {/* Technical Specs Grid */}
         <div className="mt-3 grid grid-cols-3 gap-2 text-center">
           <div className="bg-slate-50 py-2 px-1">
-            <span className="block text-[10px] text-slate-500 uppercase tracking-wider">Width</span>
+            <span className="block text-[10px] text-slate-500 uppercase tracking-wider">{t.showroom.width}</span>
             <span className="block text-sm font-medium text-slate-900">{product.width}cm</span>
           </div>
           <div className="bg-slate-50 py-2 px-1">
-            <span className="block text-[10px] text-slate-500 uppercase tracking-wider">GSM</span>
+            <span className="block text-[10px] text-slate-500 uppercase tracking-wider">{t.showroom.gsm}</span>
             <span className="block text-sm font-medium text-slate-900">{product.weight}</span>
           </div>
           <div className="bg-slate-50 py-2 px-1">
-            <span className="block text-[10px] text-slate-500 uppercase tracking-wider">Price</span>
+            <span className="block text-[10px] text-slate-500 uppercase tracking-wider">{t.showroom.price}</span>
             <span className="block text-sm font-medium text-slate-900">{priceLabels[product.priceCategory]}</span>
           </div>
         </div>
@@ -118,7 +124,7 @@ function ProductCard({ product }: { product: FabricProduct }) {
 
         {/* Colors */}
         <div className="mt-3 flex items-center gap-2">
-          <span className="text-[10px] text-slate-400 uppercase tracking-wider">Colors:</span>
+          <span className="text-[10px] text-slate-400 uppercase tracking-wider">{t.showroom.colors}:</span>
           <span className="text-xs text-slate-600 line-clamp-1">
             {product.colors.slice(0, 3).join(', ')}
             {product.colors.length > 3 && ` +${product.colors.length - 3}`}
@@ -141,6 +147,7 @@ function FilterSidebar({
   fireRetardantOnly,
   setFireRetardantOnly,
   onReset,
+  locale,
 }: {
   selectedCategory: FabricCategory | null
   setSelectedCategory: (cat: FabricCategory | null) => void
@@ -153,7 +160,9 @@ function FilterSidebar({
   fireRetardantOnly: boolean
   setFireRetardantOnly: (val: boolean) => void
   onReset: () => void
+  locale: Locale
 }) {
+  const t = getTranslation(locale)
   const categories = getCategories()
   const usageAreas: UsageArea[] = ['curtains', 'upholstery', 'bedding', 'tablecloth', 'cushions', 'wall-panels', 'event-decor', 'headboards', 'throws']
 
@@ -163,20 +172,20 @@ function FilterSidebar({
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium tracking-[0.1em] uppercase text-slate-900">
-            Filters
+            {t.showroom.filters}
           </h2>
           <button
             onClick={onReset}
             className="text-xs text-slate-500 hover:text-slate-900 transition-colors"
           >
-            Reset All
+            {t.showroom.resetAll}
           </button>
         </div>
 
         {/* Category Filter */}
         <div className="space-y-3">
           <h3 className="text-xs font-medium tracking-[0.1em] uppercase text-slate-700">
-            Category
+            {t.showroom.category}
           </h3>
           <div className="space-y-1">
             <button
@@ -188,7 +197,7 @@ function FilterSidebar({
                   : 'text-slate-600 hover:bg-slate-100'
               )}
             >
-              All Categories
+              {t.showroom.allCategories}
             </button>
             {categories.map((cat) => (
               <button
@@ -201,7 +210,7 @@ function FilterSidebar({
                     : 'text-slate-600 hover:bg-slate-100'
                 )}
               >
-                {categoryLabels[cat].en}
+                {categoryLabels[cat][locale]}
               </button>
             ))}
           </div>
@@ -210,7 +219,7 @@ function FilterSidebar({
         {/* Usage Area Filter */}
         <div className="space-y-3">
           <h3 className="text-xs font-medium tracking-[0.1em] uppercase text-slate-700">
-            Usage Area
+            {t.showroom.usageArea}
           </h3>
           <div className="space-y-1">
             <button
@@ -222,7 +231,7 @@ function FilterSidebar({
                   : 'text-slate-600 hover:bg-slate-100'
               )}
             >
-              All Uses
+              {t.showroom.allUses}
             </button>
             {usageAreas.map((usage) => (
               <button
@@ -235,7 +244,7 @@ function FilterSidebar({
                     : 'text-slate-600 hover:bg-slate-100'
                 )}
               >
-                {usageAreaLabels[usage].en}
+                {t.showroom.usageAreas[usageAreaKeyMap[usage]]}
               </button>
             ))}
           </div>
@@ -244,7 +253,7 @@ function FilterSidebar({
         {/* Weight Range */}
         <div className="space-y-3">
           <h3 className="text-xs font-medium tracking-[0.1em] uppercase text-slate-700">
-            Weight (GSM)
+            {t.showroom.weight}
           </h3>
           <div className="flex items-center gap-2">
             <input
@@ -268,7 +277,7 @@ function FilterSidebar({
         {/* Price Category */}
         <div className="space-y-3">
           <h3 className="text-xs font-medium tracking-[0.1em] uppercase text-slate-700">
-            Price Range
+            {t.showroom.priceRange}
           </h3>
           <div className="flex flex-wrap gap-2">
             <button
@@ -280,7 +289,7 @@ function FilterSidebar({
                   : 'border border-slate-200 text-slate-600 hover:border-slate-400'
               )}
             >
-              All
+              {t.showroom.all}
             </button>
             {[1, 2, 3, 4, 5].map((price) => (
               <button
@@ -308,7 +317,7 @@ function FilterSidebar({
               onChange={(e) => setFireRetardantOnly(e.target.checked)}
               className="w-4 h-4 border-slate-300 text-slate-900 focus:ring-slate-500"
             />
-            <span className="text-sm text-slate-700">Fire Retardant Only</span>
+            <span className="text-sm text-slate-700">{t.showroom.fireRetardantOnly}</span>
           </label>
         </div>
       </div>
@@ -316,7 +325,64 @@ function FilterSidebar({
   )
 }
 
+// Language Selector Component
+function LanguageSelector({ locale, setLocale }: { locale: Locale; setLocale: (l: Locale) => void }) {
+  const [isOpen, setIsOpen] = useState(false)
+  
+  const localeNames: Record<Locale, string> = {
+    en: 'English',
+    tr: 'Türkçe',
+    ru: 'Русский',
+  }
+  
+  const localeFlags: Record<Locale, string> = {
+    en: '🇬🇧',
+    tr: '🇹🇷',
+    ru: '🇷🇺',
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:text-slate-900 transition-colors"
+      >
+        <Globe className="w-4 h-4" />
+        <span>{localeFlags[locale]} {localeNames[locale]}</span>
+        <ChevronDown className={cn("w-4 h-4 transition-transform", isOpen && "rotate-180")} />
+      </button>
+      
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-slate-200 shadow-lg z-50">
+            {locales.map((l) => (
+              <button
+                key={l}
+                onClick={() => {
+                  setLocale(l)
+                  setIsOpen(false)
+                }}
+                className={cn(
+                  "w-full text-left px-4 py-2 text-sm transition-colors",
+                  locale === l ? "bg-slate-100 text-slate-900" : "text-slate-600 hover:bg-slate-50"
+                )}
+              >
+                {localeFlags[l]} {localeNames[l]}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function ShowroomPage() {
+  // Locale state
+  const [locale, setLocale] = useState<Locale>('en')
+  const t = getTranslation(locale)
+  
   // Filter states
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<FabricCategory | null>(null)
@@ -326,6 +392,16 @@ export default function ShowroomPage() {
   const [fireRetardantOnly, setFireRetardantOnly] = useState(false)
   const [sortBy, setSortBy] = useState<SortOption>('name-asc')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
+
+  // Sort labels with i18n
+  const sortLabels: Record<SortOption, string> = {
+    'name-asc': t.showroom.sortOptions.nameAsc,
+    'name-desc': t.showroom.sortOptions.nameDesc,
+    'weight-asc': t.showroom.sortOptions.weightAsc,
+    'weight-desc': t.showroom.sortOptions.weightDesc,
+    'price-asc': t.showroom.sortOptions.priceAsc,
+    'price-desc': t.showroom.sortOptions.priceDesc,
+  }
 
   // Reset all filters
   const resetFilters = useCallback(() => {
@@ -414,24 +490,29 @@ export default function ShowroomPage() {
             </Link>
             <nav className="hidden md:flex items-center gap-8">
               <Link href="/" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Home
+                {t.showroom.home}
               </Link>
               <Link href="/showroom" className="text-sm font-medium text-slate-900">
                 Showroom
               </Link>
-              <Link href="#contact" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
-                Contact
+              <Link href="/#contact" className="text-sm text-slate-600 hover:text-slate-900 transition-colors">
+                {t.showroom.contact}
               </Link>
+              <LanguageSelector locale={locale} setLocale={setLocale} />
             </nav>
+            {/* Mobile Language Selector */}
+            <div className="md:hidden">
+              <LanguageSelector locale={locale} setLocale={setLocale} />
+            </div>
           </div>
 
           {/* Title Section */}
           <div className="py-8 text-center">
             <h1 className="text-3xl md:text-4xl font-light tracking-tight text-slate-900">
-              Fabric Showroom
+              {t.showroom.title}
             </h1>
             <p className="mt-2 text-slate-500">
-              {FABRIC_DATA.length} Premium Fabrics | Technical Specifications & Samples
+              {FABRIC_DATA.length} {t.showroom.subtitle}
             </p>
           </div>
         </div>
@@ -447,7 +528,7 @@ export default function ShowroomPage() {
               className="lg:hidden flex items-center gap-2 px-4 py-2 border border-slate-200 text-sm text-slate-700 hover:border-slate-400 transition-colors"
             >
               <SlidersHorizontal className="w-4 h-4" />
-              Filters
+              {t.showroom.filters}
               {activeFilterCount > 0 && (
                 <span className="ml-1 w-5 h-5 flex items-center justify-center bg-slate-900 text-white text-xs rounded-full">
                   {activeFilterCount}
@@ -460,7 +541,7 @@ export default function ShowroomPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search by name, SKU, or pattern..."
+                placeholder={t.showroom.search}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-slate-200 text-sm focus:border-slate-400 focus:outline-none transition-colors"
@@ -493,7 +574,7 @@ export default function ShowroomPage() {
 
             {/* Results Count */}
             <span className="hidden sm:block text-sm text-slate-500 whitespace-nowrap">
-              {filteredProducts.length} products
+              {filteredProducts.length} {t.showroom.products}
             </span>
           </div>
         </div>
@@ -516,6 +597,7 @@ export default function ShowroomPage() {
               fireRetardantOnly={fireRetardantOnly}
               setFireRetardantOnly={setFireRetardantOnly}
               onReset={resetFilters}
+              locale={locale}
             />
           </div>
 
@@ -523,18 +605,18 @@ export default function ShowroomPage() {
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-slate-500">No products found matching your criteria.</p>
+                <p className="text-slate-500">{t.showroom.noProducts}</p>
                 <button
                   onClick={resetFilters}
                   className="mt-4 px-6 py-2 bg-slate-900 text-white text-sm hover:bg-slate-800 transition-colors"
                 >
-                  Reset Filters
+                  {t.showroom.resetFilters}
                 </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
                 {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.id} product={product} locale={locale} />
                 ))}
               </div>
             )}
@@ -551,7 +633,7 @@ export default function ShowroomPage() {
           />
           <div className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-white overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-slate-200 px-4 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-medium text-slate-900">Filters</h2>
+              <h2 className="text-lg font-medium text-slate-900">{t.showroom.filters}</h2>
               <button
                 onClick={() => setShowMobileFilters(false)}
                 className="p-2 text-slate-500 hover:text-slate-900"
@@ -572,6 +654,7 @@ export default function ShowroomPage() {
                 fireRetardantOnly={fireRetardantOnly}
                 setFireRetardantOnly={setFireRetardantOnly}
                 onReset={resetFilters}
+                locale={locale}
               />
             </div>
             <div className="sticky bottom-0 bg-white border-t border-slate-200 p-4">
@@ -579,7 +662,7 @@ export default function ShowroomPage() {
                 onClick={() => setShowMobileFilters(false)}
                 className="w-full py-3 bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
               >
-                View {filteredProducts.length} Products
+                {filteredProducts.length} {t.showroom.products}
               </button>
             </div>
           </div>
