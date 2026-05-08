@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { useLocale } from '@/lib/locale-context'
@@ -26,6 +27,7 @@ export function Navigation() {
   }, [])
 
   const navItems = [
+    { href: '/showroom', label: 'Showroom', isLink: true },
     { href: '#collections', label: t.nav.collections },
     { href: '#heritage', label: t.nav.heritage },
     { href: '#atelier', label: t.nav.atelier },
@@ -62,16 +64,27 @@ export function Navigation() {
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-12">
               {navItems.map((item) => (
-                <motion.a
-                  key={item.href}
-                  href={item.href}
-                  className="relative font-sans text-sm tracking-[0.2em] uppercase text-navy/80 hover:text-navy transition-colors group"
-                  whileHover={{ y: -2 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {item.label}
-                  <span className="absolute -bottom-1 left-0 w-full h-[1px] bg-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-                </motion.a>
+                item.isLink ? (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="relative font-sans text-sm tracking-[0.2em] uppercase text-navy/80 hover:text-navy transition-colors group"
+                  >
+                    {item.label}
+                    <span className="absolute -bottom-1 left-0 w-full h-[1px] bg-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                  </Link>
+                ) : (
+                  <motion.a
+                    key={item.href}
+                    href={item.href}
+                    className="relative font-sans text-sm tracking-[0.2em] uppercase text-navy/80 hover:text-navy transition-colors group"
+                    whileHover={{ y: -2 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {item.label}
+                    <span className="absolute -bottom-1 left-0 w-full h-[1px] bg-gold scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                  </motion.a>
+                )
               ))}
             </div>
 
@@ -142,17 +155,34 @@ export function Navigation() {
               {/* Mobile Nav Items */}
               <div className="flex-1 flex flex-col items-center justify-center gap-8">
                 {navItems.map((item, index) => (
-                  <motion.a
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="font-serif text-3xl text-navy"
-                  >
-                    {item.label}
-                  </motion.a>
+                  item.isLink ? (
+                    <motion.div
+                      key={item.href}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Link
+                        href={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="font-serif text-3xl text-navy"
+                      >
+                        {item.label}
+                      </Link>
+                    </motion.div>
+                  ) : (
+                    <motion.a
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="font-serif text-3xl text-navy"
+                    >
+                      {item.label}
+                    </motion.a>
+                  )
                 ))}
               </div>
 

@@ -3,92 +3,105 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Karaca Bey - Contemporary Heritage Luxury Palette */
+/* Karacabey Tekstil - Industrial Luxury Design System */
+/* White & Slate Palette with Technical Typography */
+
 :root {
-  /* Core Brand Colors */
-  --ivory: #FCFAF5;
-  --antique-gold: #B89B5E;
-  --deep-navy: #0A1128;
-  --gold-light: #D4BC84;
-  --gold-dark: #8B7340;
-  --navy-light: #1A2744;
-  --cream: #F5F0E6;
+  /* Core Brand Colors - Industrial Luxury */
+  --white: #FFFFFF;
+  --slate-50: #F8FAFC;
+  --slate-100: #F1F5F9;
+  --slate-200: #E2E8F0;
+  --slate-300: #CBD5E1;
+  --slate-400: #94A3B8;
+  --slate-500: #64748B;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1E293B;
+  --slate-900: #0F172A;
+  --slate-950: #020617;
   
-  /* Semantic Tokens */
-  --background: oklch(0.985 0.005 85);
-  --foreground: oklch(0.15 0.02 250);
-  --card: oklch(0.99 0.003 85);
-  --card-foreground: oklch(0.15 0.02 250);
-  --popover: oklch(0.99 0.003 85);
-  --popover-foreground: oklch(0.15 0.02 250);
-  --primary: oklch(0.65 0.08 75);
-  --primary-foreground: oklch(0.99 0.003 85);
-  --secondary: oklch(0.18 0.03 250);
-  --secondary-foreground: oklch(0.99 0.003 85);
-  --muted: oklch(0.94 0.008 85);
-  --muted-foreground: oklch(0.45 0.02 250);
-  --accent: oklch(0.72 0.06 75);
-  --accent-foreground: oklch(0.15 0.02 250);
+  /* Accent - Subtle Gold for CTAs */
+  --accent-gold: #B89B5E;
+  
+  /* Semantic Tokens - Light Mode */
+  --background: oklch(0.99 0.002 240);
+  --foreground: oklch(0.15 0.015 240);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.015 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.015 240);
+  --primary: oklch(0.25 0.015 240);
+  --primary-foreground: oklch(0.99 0.002 240);
+  --secondary: oklch(0.96 0.005 240);
+  --secondary-foreground: oklch(0.25 0.015 240);
+  --muted: oklch(0.96 0.005 240);
+  --muted-foreground: oklch(0.45 0.015 240);
+  --accent: oklch(0.96 0.005 240);
+  --accent-foreground: oklch(0.25 0.015 240);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.88 0.01 85);
-  --input: oklch(0.92 0.008 85);
-  --ring: oklch(0.65 0.08 75);
-  --chart-1: oklch(0.65 0.08 75);
-  --chart-2: oklch(0.18 0.03 250);
-  --chart-3: oklch(0.72 0.06 75);
-  --chart-4: oklch(0.55 0.06 75);
-  --chart-5: oklch(0.25 0.02 250);
-  --radius: 0.25rem;
-  --sidebar: oklch(0.985 0.005 85);
-  --sidebar-foreground: oklch(0.15 0.02 250);
-  --sidebar-primary: oklch(0.65 0.08 75);
-  --sidebar-primary-foreground: oklch(0.985 0.005 85);
-  --sidebar-accent: oklch(0.94 0.008 85);
-  --sidebar-accent-foreground: oklch(0.15 0.02 250);
-  --sidebar-border: oklch(0.88 0.01 85);
-  --sidebar-ring: oklch(0.65 0.08 75);
+  --border: oklch(0.90 0.005 240);
+  --input: oklch(0.90 0.005 240);
+  --ring: oklch(0.25 0.015 240);
+  --chart-1: oklch(0.25 0.015 240);
+  --chart-2: oklch(0.45 0.015 240);
+  --chart-3: oklch(0.65 0.010 240);
+  --chart-4: oklch(0.75 0.008 240);
+  --chart-5: oklch(0.85 0.005 240);
+  --radius: 0rem;
+  --sidebar: oklch(0.99 0.002 240);
+  --sidebar-foreground: oklch(0.15 0.015 240);
+  --sidebar-primary: oklch(0.25 0.015 240);
+  --sidebar-primary-foreground: oklch(0.99 0.002 240);
+  --sidebar-accent: oklch(0.96 0.005 240);
+  --sidebar-accent-foreground: oklch(0.25 0.015 240);
+  --sidebar-border: oklch(0.90 0.005 240);
+  --sidebar-ring: oklch(0.25 0.015 240);
 }
 
 .dark {
-  --background: oklch(0.15 0.02 250);
-  --foreground: oklch(0.985 0.005 85);
-  --card: oklch(0.18 0.02 250);
-  --card-foreground: oklch(0.985 0.005 85);
-  --popover: oklch(0.18 0.02 250);
-  --popover-foreground: oklch(0.985 0.005 85);
-  --primary: oklch(0.72 0.08 75);
-  --primary-foreground: oklch(0.15 0.02 250);
-  --secondary: oklch(0.25 0.02 250);
-  --secondary-foreground: oklch(0.985 0.005 85);
-  --muted: oklch(0.25 0.02 250);
-  --muted-foreground: oklch(0.65 0.02 250);
-  --accent: oklch(0.65 0.08 75);
-  --accent-foreground: oklch(0.15 0.02 250);
+  --background: oklch(0.12 0.015 240);
+  --foreground: oklch(0.96 0.005 240);
+  --card: oklch(0.15 0.015 240);
+  --card-foreground: oklch(0.96 0.005 240);
+  --popover: oklch(0.15 0.015 240);
+  --popover-foreground: oklch(0.96 0.005 240);
+  --primary: oklch(0.96 0.005 240);
+  --primary-foreground: oklch(0.12 0.015 240);
+  --secondary: oklch(0.22 0.015 240);
+  --secondary-foreground: oklch(0.96 0.005 240);
+  --muted: oklch(0.22 0.015 240);
+  --muted-foreground: oklch(0.65 0.010 240);
+  --accent: oklch(0.22 0.015 240);
+  --accent-foreground: oklch(0.96 0.005 240);
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.28 0.02 250);
-  --input: oklch(0.28 0.02 250);
-  --ring: oklch(0.72 0.08 75);
-  --chart-1: oklch(0.72 0.08 75);
-  --chart-2: oklch(0.65 0.06 75);
-  --chart-3: oklch(0.55 0.06 75);
-  --chart-4: oklch(0.45 0.05 75);
-  --chart-5: oklch(0.35 0.04 75);
-  --sidebar: oklch(0.18 0.02 250);
-  --sidebar-foreground: oklch(0.985 0.005 85);
-  --sidebar-primary: oklch(0.72 0.08 75);
-  --sidebar-primary-foreground: oklch(0.15 0.02 250);
-  --sidebar-accent: oklch(0.25 0.02 250);
-  --sidebar-accent-foreground: oklch(0.985 0.005 85);
-  --sidebar-border: oklch(0.28 0.02 250);
-  --sidebar-ring: oklch(0.72 0.08 75);
+  --border: oklch(0.25 0.015 240);
+  --input: oklch(0.25 0.015 240);
+  --ring: oklch(0.80 0.010 240);
+  --chart-1: oklch(0.80 0.010 240);
+  --chart-2: oklch(0.65 0.010 240);
+  --chart-3: oklch(0.55 0.008 240);
+  --chart-4: oklch(0.45 0.006 240);
+  --chart-5: oklch(0.35 0.005 240);
+  --sidebar: oklch(0.15 0.015 240);
+  --sidebar-foreground: oklch(0.96 0.005 240);
+  --sidebar-primary: oklch(0.80 0.010 240);
+  --sidebar-primary-foreground: oklch(0.12 0.015 240);
+  --sidebar-accent: oklch(0.22 0.015 240);
+  --sidebar-accent-foreground: oklch(0.96 0.005 240);
+  --sidebar-border: oklch(0.25 0.015 240);
+  --sidebar-ring: oklch(0.80 0.010 240);
 }
 
 @theme inline {
-  --font-sans: 'Cormorant Garamond', 'Georgia', serif;
-  --font-serif: 'Cormorant Garamond', 'Georgia', serif;
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  /* Technical Typography - Sans-serif focused */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', 'Monaco', monospace;
+  
+  /* Color Tokens */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -126,7 +139,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   
-  /* Custom Brand Colors */
+  /* Legacy Brand Colors - kept for backwards compatibility */
   --color-ivory: #FCFAF5;
   --color-gold: #B89B5E;
   --color-gold-light: #D4BC84;
@@ -145,6 +158,10 @@
   }
   
   /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+  
   html.lenis, html.lenis body {
     height: auto;
   }
@@ -166,7 +183,7 @@
   }
 }
 
-/* Gold Foil Effect */
+/* Gold Foil Effect - kept for homepage */
 .gold-foil {
   background: linear-gradient(135deg, #B89B5E 0%, #D4BC84 25%, #B89B5E 50%, #8B7340 75%, #B89B5E 100%);
   background-size: 200% 200%;
@@ -238,30 +255,47 @@
   animation-delay: -4s;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - Industrial Style */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--ivory);
+  background: #F1F5F9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--antique-gold);
-  border-radius: 4px;
+  background: #94A3B8;
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gold-dark);
+  background: #64748B;
 }
 
 /* Typography for Cyrillic */
 @font-face {
-  font-family: 'Cormorant Garamond';
+  font-family: 'Inter';
   font-style: normal;
-  font-weight: 300 700;
+  font-weight: 100 900;
   font-display: swap;
-  src: url('https://fonts.gstatic.com/s/cormorantgaramond/v16/co3YmX5slCNuHLi8bLeY9MK7whWMhyjQEl5fuA.woff2') format('woff2');
+  src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZJhjp-Ek-_0.woff2') format('woff2');
   unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+/* Industrial Luxury Focus States */
+:focus-visible {
+  outline: 2px solid #0F172A;
+  outline-offset: 2px;
+}
+
+/* Selection Color */
+::selection {
+  background-color: #E2E8F0;
+  color: #0F172A;
+}
+
+/* Minimalist Link Underlines */
+a {
+  text-underline-offset: 4px;
 }
