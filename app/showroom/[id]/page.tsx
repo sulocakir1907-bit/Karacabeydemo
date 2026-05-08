@@ -87,10 +87,12 @@ function LanguageSelector({ locale, setLocale }: { locale: Locale; setLocale: (l
 }
 
 // Magnifier component for texture inspection
+const LENS_SIZE = 180 // px
+
 function TextureMagnifier({ 
   src, 
   alt,
-  magnification = 2.5,
+  magnification = 3,
   hoverText
 }: { 
   src: string
@@ -99,28 +101,57 @@ function TextureMagnifier({
   hoverText: string
 }) {
   const [isActive, setIsActive] = useState(false)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 })
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Track container size for accurate magnification math
+  useEffect(() => {
+    if (!containerRef.current) return
+    
+    const updateSize = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect()
+        setContainerSize({ width: rect.width, height: rect.height })
+      }
+    }
+    
+    updateSize()
+    
+    const resizeObserver = new ResizeObserver(updateSize)
+    resizeObserver.observe(containerRef.current)
+    
+    return () => resizeObserver.disconnect()
+  }, [])
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return
     
     const rect = containerRef.current.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width) * 100
-    const y = ((e.clientY - rect.top) / rect.height) * 100
+    // Cursor position in pixels relative to container
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
     
-    setPosition({ x, y })
+    setCursorPos({ x, y })
   }, [])
 
   const handleMouseEnter = useCallback(() => setIsActive(true), [])
   const handleMouseLeave = useCallback(() => setIsActive(false), [])
+
+  // Calculate background position so cursor point appears centered in lens
+  // The background is sized at (containerSize * magnification)
+  // We want the point (cursorX * magnification, cursorY * magnification) to be at the lens center (LENS_SIZE / 2)
+  const bgWidth = containerSize.width * magnification
+  const bgHeight = containerSize.height * magnification
+  const bgPosX = -(cursorPos.x * magnification - LENS_SIZE / 2)
+  const bgPosY = -(cursorPos.y * magnification - LENS_SIZE / 2)
 
   return (
     <div className="relative">
       {/* Main Image Container */}
       <div
         ref={containerRef}
-        className="relative aspect-square overflow-hidden bg-slate-100 cursor-crosshair"
+        className="relative aspect-square overflow-hidden bg-slate-100 cursor-crosshair select-none"
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -129,36 +160,34 @@ function TextureMagnifier({
           src={src}
           alt={alt}
           fill
-          className="object-cover"
+          className="object-cover pointer-events-none"
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
+          unoptimized
         />
 
         {/* Magnifier Lens Overlay */}
-        {isActive && (
+        {isActive && containerSize.width > 0 && (
           <div
-            className="absolute w-40 h-40 border-2 border-white shadow-xl rounded-full overflow-hidden pointer-events-none"
+            className="absolute border-2 border-white shadow-2xl rounded-full overflow-hidden pointer-events-none ring-1 ring-slate-900/20"
             style={{
-              left: `${position.x}%`,
-              top: `${position.y}%`,
+              width: `${LENS_SIZE}px`,
+              height: `${LENS_SIZE}px`,
+              left: `${cursorPos.x}px`,
+              top: `${cursorPos.y}px`,
               transform: 'translate(-50%, -50%)',
+              backgroundImage: `url(${src})`,
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: `${bgWidth}px ${bgHeight}px`,
+              backgroundPosition: `${bgPosX}px ${bgPosY}px`,
             }}
-          >
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${src})`,
-                backgroundSize: `${magnification * 100}% ${magnification * 100}%`,
-                backgroundPosition: `${position.x}% ${position.y}%`,
-              }}
-            />
-          </div>
+          />
         )}
 
         {/* Zoom Indicator */}
-        <div className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-xs text-slate-700">
+        <div className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm text-xs text-slate-700 pointer-events-none">
           <ZoomIn className="w-3.5 h-3.5" />
-          <span>{hoverText}</span>
+          <span>{hoverText} ({magnification}x)</span>
         </div>
       </div>
     </div>
